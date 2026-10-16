@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multilingual AI Symptom Checker & Triage Platform | SDG 3</title>
+  <style>
+    :root {
+      --blue: #1769aa;
+      --blue-dark: #104b80;
+      --teal: #18a999;
+      --ink: #193047;
+      --muted: #607487;
+      --bg: #f3f8fc;
+      --card: #ffffff;
+      --border: #dce7ef;
+      --danger: #a62b2b;
+      --danger-bg: #fff1f0;
+      --warning-bg: #fff8eb;
+      --warning-border: #fce0bc;
+      --warning-text: #b86200;
+      --success-bg: #eaf8f3;
+      --success-border: #c4eadc;
+      --success-text: #087f73;
+    }
+
+    [data-theme="dark"] {
+      --blue: #3b9eff;
+      --blue-dark: #6cb6ff;
+      --teal: #22d3ee;
+      --ink: #f1f5f9;
+      --muted: #94a3b8;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --danger-bg: #451a03;
+      --warning-bg: #422006;
+      --success-bg: #064e3b;
+    }
+
+    * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1120px, 92%); margin: 0 auto; }
+
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 72px;
+      gap: 15px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; }
+    .brand-icon {
+      width: 42px; height: 42px; display: grid; place-items: center;
+      border-radius: 14px; color: white; background: linear-gradient(135deg, var(--blue), var(--teal));
+      font-size: 1.3rem;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-links { display: flex; gap: 18px; color: var(--muted); font-weight: 600; font-size: .95rem; }
+    .nav-links a:hover { color: var(--blue); }
+    
+    .lang-select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.88rem;
+      background: var(--card);
+      color: var(--ink);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .theme-toggle {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 50%;
+      width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem;
+    }
+
+    .hero {
+      padding: 76px 0 64px;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(24,169,153,.14), transparent 28%),
+        radial-gradient(circle at 10% 10%, rgba(23,105,170,.12), transparent 28%),
+        var(--bg);
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.25fr .75fr; align-items: center; gap: 44px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px;
+      border: 1px solid var(--border); border-radius: 999px; background: var(--card);
+      color: var(--teal); font-size: .82rem; font-weight: 800; letter-spacing: .02em;
+    }
+    h1 { font-size: clamp(2.2rem, 4.5vw, 4rem); line-height: 1.1; letter-spacing: -.03em; margin: 18px 0; }
+    h1 span { color: var(--blue); }
+    .hero p { color: var(--muted); max-width: 650px; font-size: 1.1rem; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: 0; border-radius: 12px; padding: 13px 19px; background: var(--blue);
+      color: white; font-weight: 800; cursor: pointer; font-size: 1rem;
+      transition: transform .2s, background .2s;
+    }
+    .button:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .button.secondary { background: var(--card); color: var(--blue); border: 1px solid var(--border); }
+    .button.outline { background: transparent; color: var(--blue); border: 2px solid var(--blue); }
+    .button.outline:hover { background: rgba(23,105,170,0.1); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+    .hero-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 26px; padding: 28px;
+      box-shadow: 0 18px 55px rgba(27, 66, 98, .08);
+    }
+    .hero-art {
+      min-height: 270px; display: grid; place-items: center; text-align: center;
+      background: linear-gradient(145deg, rgba(23,105,170,.05), rgba(24,169,153,.05)); border-radius: 20px; padding: 25px;
+    }
+    .medical-symbol {
+      width: 100px; height: 100px; margin: 0 auto 16px; border-radius: 30px;
+      display: grid; place-items: center; background: var(--card); color: var(--blue);
+      font-size: 3.5rem; font-weight: 300; box-shadow: 0 12px 30px rgba(23,105,170,.12);
+    }
+
+    section { padding: 66px 0; }
+    .section-heading { max-width: 720px; margin: 0 auto 32px; text-align: center; }
+    .section-heading h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); margin: 0 0 10px; letter-spacing: -.025em; }
+    .section-heading p { color: var(--muted); margin: 0; }
+    .checker-layout { display: grid; grid-template-columns: 1fr .72fr; gap: 24px; align-items: start; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 26px; box-shadow: 0 10px 35px rgba(27,66,98,.045);
+    }
+    .card h3 { margin-top: 0; margin-bottom: 8px; }
+    .muted { color: var(--muted); }
+    .field { margin: 22px 0; }
+    label, .field-label { display: block; font-weight: 750; margin-bottom: 8px; }
+    select, textarea, input[type="text"], input[type="number"] {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px;
+      font: inherit; color: var(--ink); background: var(--card);
+    }
+    select:focus, textarea:focus, input:focus { outline: 3px solid rgba(23,105,170,.15); border-color: var(--blue); }
+
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .filter-tab {
+      background: var(--bg); border: 1px solid var(--border); padding: 6px 12px;
+      border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; color: var(--muted);
+    }
+    .filter-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+    .category-group { margin-bottom: 16px; }
+    .category-title { font-size: .88rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+    .symptom-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .symptom-option {
+      display: flex; align-items: center; gap: 9px; border: 1px solid var(--border);
+      border-radius: 11px; padding: 11px; cursor: pointer; font-weight: 600; background: var(--card);
+      font-size: .94rem;
+    }
+    .symptom-option:has(input:checked) { border-color: var(--blue); background: rgba(23,105,170,0.06); }
+    .symptom-option input { accent-color: var(--blue); }
+    
+    .notice { border-radius: 12px; padding: 14px 15px; font-size: .92rem; margin: 12px 0; }
+    .notice.info { background: rgba(23,105,170,0.1); border: 1px solid var(--border); color: var(--blue); }
+    .notice.warning { background: var(--danger-bg); border: 1px solid #f2c9c5; color: var(--danger); }
+    .notice.success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
+    .notice.triage-amber { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-text); }
+    
+    .results { display: none; margin-top: 22px; border-top: 2px dashed var(--border); padding-top: 20px; }
+    .results.show { display: block; }
+    .result-list { padding-left: 20px; }
+    .result-list li { margin: 10px 0; }
+    
+    .disclaimer-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px;
+      display: flex; gap: 12px; align-items: flex-start; margin: 20px 0;
+    }
+    .disclaimer-box input { margin-top: 4px; transform: scale(1.2); accent-color: var(--blue); }
+
+    .history-card { margin-top: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+    .history-item { font-size: .85rem; border-bottom: 1px solid var(--border); padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+
+    .about-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .about-card { padding: 23px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; }
+    .about-card .icon { font-size: 1.8rem; }
+    .about-card h3 { margin: 9px 0 6px; }
+    .about-card p { margin: 0; color: var(--muted); }
+    
+    .sdg-band { background: rgba(59,126,68,0.1); border: 1px solid rgba(59,126,68,0.3); border-radius: 22px; padding: 30px; display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; }
+    .sdg-number { width: 76px; height: 76px; display: grid; place-items: center; border-radius: 18px; background: #3b7e44; color: white; font-size: 1.6rem; font-weight: 900; }
+    
+    footer { background: #0f172a; color: white; padding: 30px 0; }
+    footer p { color: #94a3b8; margin: 7px 0; font-size: .92rem; }
+    footer .footer-grid { display: flex; justify-content: space-between; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .small { font-size: .88rem; }
+    
+    @media (max-width: 800px) {
+      .hero-grid, .checker-layout { grid-template-columns: 1fr; }
+      .hero { padding-top: 48px; }
+      .about-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <header>
+    <div class="container nav">
+      <a class="brand" href="#home" aria-label="AI Symptom Checker home">
+        <span class="brand-icon" aria-hidden="true">+</span>
+        <span data-i18n="brand_title">AI Triage & Clinical Platform</span>
+      </a>
+      <div class="nav-right">
+        <select class="lang-select" id="langSelector" aria-label="Select Language">
+          <option value="en">English</option>
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="te">తెలుగు (Telugu)</option>
+          <option value="bn">বাংলা (Bengali)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+          <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        </select>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="#home" data-i18n="nav_home">Home</a>
+          <a href="#checker" data-i18n="nav_checker">Symptom Checker</a>
+          <a href="#about" data-i18n="nav_about">About</a>
+          <a href="#sdg">SDG 3</a>
+        </nav>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">● SDG 3 · Good Health and Well-being</span>
+          <h1 data-i18n="hero_title">Smart Digital Triage &amp; <span>Health Guidance.</span></h1>
+          <p data-i18n="hero_subtitle">Multilingual symptom stratification tool equipped with vitals analysis, region filtering, theme customization, and doctor-ready visit preparation reports.</p>
+          <div class="hero-actions">
+            <a class="button" href="#checker" data-i18n="btn_start_check">Start Triage Checker →</a>
+            <a class="button secondary" href="#about" data-i18n="btn_about">Platform Overview</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-art">
+            <div>
+              <div class="medical-symbol" aria-hidden="true">+</div>
+              <strong data-i18n="hero_art_title">Multilingual Triage Engine</strong>
+              <small data-i18n="hero_art_sub">7 Languages • Vitals Check • Local Log</small>
+            </div>
+          </div>
+          <p class="small muted" data-i18n="hero_art_desc">Educational digital health prototype supporting responsible healthcare awareness.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="checker">
+      <div class="container">
+        <div class="section-heading">
+          <h2 data-i18n="checker_heading">Clinical Triage Assessment</h2>
+          <p data-i18n="checker_desc">Filter and select symptoms by region, enter optional vital signs, and generate your consultation summary.</p>
+        </div>
+
+        <div class="checker-layout">
+          <div class="card">
+            <h3 data-i18n="form_title">Symptom Intake Form</h3>
+            
+            <form id="symptomForm">
+              
+              <!-- Region Filter Tabs -->
+              <div class="field" style="margin-bottom:10px;">
+                <span class="field-label" data-i18n="label_filter">1. Filter Symptoms by Body Region</span>
+                <div class="filter-tabs" id="filterTabs">
+                  <button type="button" class="filter-tab active" data-filter="all" data-i18n="tab_all">All Regions</button>
+                  <button type="button" class="filter-tab" data-filter="head" data-i18n="tab_head">Head &amp; ENT</button>
+                  <button type="button" class="filter-tab" data-filter="resp" data-i18n="tab_resp">Respiratory</button>
+                  <button type="button" class="filter-tab" data-filter="systemic" data-i18n="tab_systemic">Systemic &amp; GI</button>
+                </div>
+              </div>
+
+              <!-- Symptom Checkboxes -->
+              <div class="field" id="symptomGroupsContainer">
+                <div class="category-group group-head">
+                  <div class="category-title" data-i18n="cat_head">Head &amp; Upper Respiratory</div>
+                  <div class="symptom-list">
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="headache"> <span data-i18n="sym_headache">Headache</span></label>
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="sore-throat"> <span data-i18n="sym_sore_throat">Sore throat</span></label>
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="runny-nose"> <span data-i18n="sym_runny_nose">Runny nose</span></label>
+                  </div>
+                </div>
+
+                <div class="category-group group-resp" style="margin-top:14px;">
+                  <div class="category-title" data-i18n="cat_resp">Respiratory &amp; Chest</div>
+                  <div class="symptom-list">
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="cough"> <span data-i18n="sym_cough">Cough</span></label>
+                  </div>
+                </div>
+
+                <div class="category-group group-systemic" style="margin-top:14px;">
+                  <div class="category-title" data-i18n="cat_systemic">Systemic &amp; Gastrointestinal</div>
+                  <div class="symptom-list">
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="fever"> <span data-i18n="sym_fever">Fever / Chills</span></label>
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="tiredness"> <span data-i18n="sym_tiredness">Tiredness / Fatigue</span></label>
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="nausea"> <span data-i18n="sym_nausea">Nausea</span></label>
+                    <label class="symptom-option"><input type="checkbox" name="symptoms" value="stomach-pain"> <span data-i18n="sym_stomach">Stomach discomfort</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Optional Vitals Input -->
+              <div class="field" style="background:var(--bg); padding:14px; border-radius:12px; border:1px solid var(--border);">
+                <label for="tempInput" style="margin-bottom:4px;" data-i18n="vitals_title">Body Temperature (Optional)</label>
+                <p class="small muted" style="margin-bottom:8px;" data-i18n="vitals_desc">Enter measured temperature in Fahrenheit or Celsius.</p>
+                <div style="display:grid; grid-template-columns: 1fr auto; gap:10px;">
+                  <input type="number" id="tempInput" step="0.1" placeholder="e.g. 101.2" min="95" max="110">
+                  <select id="tempUnit" style="width:auto;">
+                    <option value="F">°F</option>
+                    <option value="C">°C</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <div class="field">
+                <label for="userNotes" data-i18n="label_notes">Additional Notes / Medications Taken</label>
+                <textarea id="userNotes" rows="2" data-i18n-ph="ph_notes" placeholder="Mention duration details, prior medical context, or treatments tried..."></textarea>
+              </div>
+
+              <!-- Duration -->
+              <div class="field">
+                <label for="duration" data-i18n="label_duration">2. How long have symptoms been present?</label>
+                <select id="duration" name="duration" required>
+                  <option value="" data-i18n="opt_choose_dur">Choose duration</option>
+                  <option value="today" data-i18n="opt_dur_today">Started today</option>
+                  <option value="few-days" data-i18n="opt_dur_few">1–3 days</option>
+                  <option value="week" data-i18n="opt_dur_week">4–7 days</option>
+                  <option value="longer" data-i18n="opt_dur_longer">More than a week</option>
+                </select>
+              </div>
+
+              <!-- Severity -->
+              <div class="field">
+                <label for="severity" data-i18n="label_severity">3. Overall severity level</label>
+                <select id="severity" name="severity" required>
+                  <option value="" data-i18n="opt_choose_sev">Choose severity</option>
+                  <option value="mild" data-i18n="opt_sev_mild">Mild (Manageable daily routine)</option>
+                  <option value="moderate" data-i18n="opt_sev_mod">Moderate (Interferes with activities)</option>
+                  <option value="severe" data-i18n="opt_sev_sev">Severe (Incapable of daily routine)</option>
+                </select>
+              </div>
+
+              <!-- Warning Signs -->
+              <div class="field">
+                <span class="field-label" data-i18n="label_warning">4. Emergency warning signs present?</span>
+                <p class="small muted" data-i18n="warning_desc">Shortness of breath, severe chest pain, sudden confusion, fainting.</p>
+                <div class="symptom-list">
+                  <label class="symptom-option"><input type="radio" name="warning" value="yes" required> <span data-i18n="opt_yes">Yes</span></label>
+                  <label class="symptom-option"><input type="radio" name="warning" value="no" required> <span data-i18n="opt_no">No</span></label>
+                </div>
+              </div>
+
+              <!-- Disclaimer Checkbox -->
+              <div class="disclaimer-box">
+                <input type="checkbox" id="disclaimerCheck" required>
+                <label for="disclaimerCheck" class="small" style="margin:0; font-weight:normal;">
+                  <strong data-i18n="disc_req">Required:</strong> <span data-i18n="disc_text">I understand this platform provides structured triage education and visit notes, not medical diagnoses.</span>
+                </label>
+              </div>
+
+              <div class="field">
+                <button class="button" type="submit" style="width:100%;" data-i18n="btn_submit">Run Professional Triage Assessment</button>
+              </div>
+            </form>
+
+            <div id="results" class="results" aria-live="polite"></div>
+          </div>
+
+          <aside>
+            <div class="card">
+              <h3 data-i18n="aside_emerg_title">Emergency Notice</h3>
+              <div class="notice warning">
+                <strong data-i18n="aside_emerg_bold">Immediate Help:</strong> <span data-i18n="aside_emerg_text">If you experience severe chest pain, acute respiratory difficulty, or sudden disorientation, contact emergency services instantly.</span>
+              </div>
+              
+              <h3 style="margin-top:24px;" data-i18n="aside_cap_title">Platform Capabilities</h3>
+              <ul class="result-list small muted">
+                <li><strong data-i18n="cap_1_b">Multilingual:</strong> <span data-i18n="cap_1_t">7 Indian languages supported.</span></li>
+                <li><strong data-i18n="cap_2_b">Vitals Integration:</strong> <span data-i18n="cap_2_t">High fever detection rules.</span></li>
+                <li><strong data-i18n="cap_3_b">Region Filters:</strong> <span data-i18n="cap_3_t">Categorized symptom selection.</span></li>
+              </ul>
+            </div>
+
+            <div class="history-card" id="historyCard" style="display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h4 style="margin:0; font-size:.95rem;" data-i18n="hist_title">Recent Session Log</h4>
+                <button type="button" class="button secondary" style="padding:4px 8px; font-size:.75rem;" onclick="clearHistory()" data-i18n="btn_clear">Clear</button>
+              </div>
+              <div id="historyList"></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" style="background: var(--card);">
+      <div class="container">
+        <div class="section-heading">
+          <h2 data-i18n="about_heading">Advanced Features Architecture</h2>
+          <p data-i18n="about_sub">Designed for complete client-side autonomy, safety compliance, and multilingual accessibility.</p>
+        </div>
+        <div class="about-grid">
+          <article class="about-card">
+            <div class="icon" aria-hidden="true">🌐</div>
+            <h3 data-i18n="ab_1_h">Multilingual Accessibility</h3>
+            <p data-i18n="ab_1_p">Provides instant translation across 7 major regional languages to remove healthcare information barriers.</p>
+          </article>
+          <article class="about-card">
+            <div class="icon" aria-hidden="true">🌡️</div>
+            <h3 data-i18n="ab_2_h">Vitals Threshold Logic</h3>
+            <p data-i18n="ab_2_p">Automatically calculates fever severity bounds from temperature entries to adjust risk recommendations.</p>
+          </article>
+          <article class="about-card">
+            <div class="icon" aria-hidden="true">🔒</div>
+            <h3 data-i18n="ab_3_h">Client-side Privacy</h3>
+            <p data-i18n="ab_3_p">All evaluation logic executes strictly within your browser. No sensitive medical data ever reaches external servers.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="sdg">
+      <div class="container">
+        <div class="sdg-band">
+          <div class="sdg-number">SDG<br>3</div>
+          <div>
+            <h2 style="margin:0 0 8px;" data-i18n="sdg_title">Good Health and Well-being</h2>
+            <p style="margin:0;" data-i18n="sdg_desc">Supporting global sustainable development targets through accessible digital tools that boost health literacy and streamline medical consultations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <strong data-i18n="brand_title">AI Triage & Clinical Platform</strong>
+        <p data-i18n="footer_sub">Multilingual Digital Health Prototype · SDG 3 Initiative</p>
+      </div>
+      <p data-i18n="footer_disc">Educational framework only. Not a clinical diagnostic substitute.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Dictionary Translation Store
+    const i18n = {
+      en: {
+        brand_title: "AI Triage & Clinical Platform",
+        nav_home: "Home", nav_checker: "Symptom Checker", nav_about: "About",
+        hero_title: "Smart Digital Triage & <span>Health Guidance.</span>",
+        hero_subtitle: "Multilingual symptom stratification tool equipped with vitals analysis, region filtering, theme customization, and doctor-ready visit preparation reports.",
+        btn_start_check: "Start Triage Checker →", btn_about: "Platform Overview",
+        hero_art_title: "Multilingual Triage Engine", hero_art_sub: "7 Languages • Vitals Check • Local Log",
+        hero_art_desc: "Educational digital health prototype supporting responsible healthcare awareness.",
+        checker_heading: "Clinical Triage Assessment",
+        checker_desc: "Filter and select symptoms by region, enter optional vital signs, and generate your consultation summary.",
+        form_title: "Symptom Intake Form", label_filter: "1. Filter Symptoms by Body Region",
+        tab_all: "All Regions", tab_head: "Head & ENT", tab_resp: "Respiratory", tab_systemic: "Systemic & GI",
+        cat_head: "Head & Upper Respiratory", cat_resp: "Respiratory & Chest", cat_systemic: "Systemic & Gastrointestinal",
+        sym_headache: "Headache", sym_sore_throat: "Sore throat", sym_runny_nose: "Runny nose",
+        sym_cough: "Cough", sym_fever: "Fever / Chills", sym_tiredness: "Tiredness / Fatigue",
+        sym_nausea: "Nausea", sym_stomach: "Stomach discomfort",
+        vitals_title: "Body Temperature (Optional)", vitals_desc: "Enter measured temperature in Fahrenheit or Celsius.",
+        label_notes: "Additional Notes / Medications Taken", ph_notes: "Mention duration details, prior medical context, or treatments tried...",
+        label_duration: "2. How long have symptoms been present?", opt_choose_dur: "Choose duration",
+        opt_dur_today: "Started today", opt_dur_few: "1–3 days", opt_dur_week: "4–7 days", opt_dur_longer: "More than a week",
+        label_severity: "3. Overall severity level", opt_choose_sev: "Choose severity",
+        opt_sev_mild: "Mild (Manageable daily routine)", opt_sev_mod: "Moderate (Interferes with activities)", opt_sev_sev: "Severe (Incapable of daily routine)",
+        label_warning: "4. Emergency warning signs present?", warning_desc: "Shortness of breath, severe chest pain, sudden confusion, fainting.",
+        opt_yes: "Yes", opt_no: "No", disc_req: "Required:", disc_text: "I understand this platform provides structured triage education and visit notes, not medical diagnoses.",
+        btn_submit: "Run Professional Triage Assessment",
+        aside_emerg_title: "Emergency Notice", aside_emerg_bold: "Immediate Help:",
+        aside_emerg_text: "If you experience severe chest pain, acute respiratory difficulty, or sudden disorientation, contact emergency services instantly.",
+        aside_cap_title: "Platform Capabilities", cap_1_b: "Multilingual:", cap_1_t: "7 Indian languages supported.",
+        cap_2_b: "Vitals Integration:", cap_2_t: "High fever detection rules.", cap_3_b: "Region Filters:", cap_3_t: "Categorized symptom selection.",
+        hist_title: "Recent Session Log", btn_clear: "Clear",
+        about_heading: "Advanced Features Architecture", about_sub: "Designed for complete client-side autonomy, safety compliance, and multilingual accessibility.",
+        ab_1_h: "Multilingual Accessibility", ab_1_p: "Provides instant translation across 7 major regional languages to remove healthcare information barriers.",
+        ab_2_h: "Vitals Threshold Logic", ab_2_p: "Automatically calculates fever severity bounds from temperature entries to adjust risk recommendations.",
+        ab_3_h: "Client-side Privacy", ab_3_p: "All evaluation logic executes strictly within your browser. No sensitive medical data ever reaches external servers.",
+        sdg_title: "Good Health and Well-being", sdg_desc: "Supporting global sustainable development targets through accessible digital tools that boost health literacy and streamline medical consultations.",
+        footer_sub: "Multilingual Digital Health Prototype · SDG 3 Initiative", footer_disc: "Educational framework only. Not a clinical diagnostic substitute."
+      },
+      hi: {
+        brand_title: "एआई लक्षण और ट्राइएज प्लेटफॉर्म",
+        nav_home: "होम", nav_checker: "लक्षण जांच", nav_about: "हमारे बारे में",
+        hero_title: "स्मार्ट डिजिटल ट्राइएज और <span>स्वास्थ्य मार्गदर्शन।</span>",
+        hero_subtitle: "बहुभाषी लक्षण विश्लेषण उपकरण जो महत्वपूर्ण संकेतों, शरीर क्षेत्र फ़िल्टरिंग और डॉक्टर परामर्श रिपोर्ट से लैस है।",
+        btn_start_check: "जांच शुरू करें →", btn_about: "प्लेटफ़ॉर्म विवरण",
+        hero_art_title: "बहुभाषी ट्राइएज इंजन", hero_art_sub: "7 भाषाएं • तापमान जांच • स्थानीय लॉग",
+        hero_art_desc: "जिम्मेदार स्वास्थ्य जागरूकता के लिए शैक्षणिक डिजिटल स्वास्थ्य उपकरण।",
+        checker_heading: "नैदानिक ट्राइएज मूल्यांकन",
+        checker_desc: "शरीर के क्षेत्र के आधार पर लक्षणों का चयन करें और अपनी रिपोर्ट तैयार करें।",
+        form_title: "लक्षण फॉर्म", label_filter: "1. शरीर के क्षेत्र से फ़िल्टर करें",
+        tab_all: "सभी क्षेत्र", tab_head: "सिर और गला", tab_resp: "श्वसन", tab_systemic: "पेट और सामान्य",
+        cat_head: "सिर और ऊपरी श्वसन", cat_resp: "श्वसन और छाती", cat_systemic: "सामान्य और पेट",
+        sym_headache: "सिरदर्द", sym_sore_throat: "गले में खराश", sym_runny_nose: "बहती नाक",
+        sym_cough: "खांसी", sym_fever: "बुखार / ठंड लगना", sym_tiredness: "थकान / कमजोरी",
+        sym_nausea: "जी मिचलाना", sym_stomach: "पेट में तकलीफ",
+        vitals_title: "शरीर का तापमान (वैकल्पिक)", vitals_desc: "फ़ारेनहाइट या सेल्सियस में तापमान दर्ज करें।",
+        label_notes: "अतिरिक्त जानकारी / ली गई दवाएं", ph_notes: "अवधि या पूर्व चिकित्सा स्थिति का विवरण दें...",
+        label_duration: "2. लक्षण कितने समय से हैं?", opt_choose_dur: "अवधि चुनें",
+        opt_dur_today: "आज शुरू हुआ", opt_dur_few: "1–3 दिन", opt_dur_week: "4–7 दिन", opt_dur_longer: "एक सप्ताह से अधिक",
+        label_severity: "3. गंभीरता का स्तर", opt_choose_sev: "गंभीरता चुनें",
+        opt_sev_mild: "हल्का (दैनिक कार्य संभव)", opt_sev_mod: "मध्यम (दैनिक कार्य प्रभावित)", opt_sev_sev: "गंभीर (दैनिक कार्य असंभव)",
+        label_warning: "4. क्या आपातकालीन लक्षण मौजूद हैं?", warning_desc: "सांस लेने में तकलीफ, छाती में तेज दर्द, अचानक बेहोशी।",
+        opt_yes: "हां", opt_no: "नहीं", disc_req: "आवश्यक:", disc_text: "मैं समझता हूं कि यह प्लेटफॉर्म केवल शैक्षणिक सहायता प्रदान करता है, चिकित्सा निदान नहीं।",
+        btn_submit: "मूल्यांकन शुरू करें",
+        aside_emerg_title: "आपातकालीन सूचना", aside_emerg_bold: "तत्काल सहायता:",
+        aside_emerg_text: "यदि आपको सीने में तेज दर्द या सांस लेने में बहुत कठिनाई हो तो तुरंत आपातकालीन सेवाओं से संपर्क करें।",
+        aside_cap_title: "क्षमताएं", cap_1_b: "बहुभाषी:", cap_1_t: "7 भारतीय भाषाओं का समर्थन।",
+        cap_2_b: "तापमान जांच:", cap_2_t: "उच्च बुखार चेतावनी नियम।", cap_3_b: "क्षेत्र फ़िल्टर:", cap_3_t: "वर्गीकृत लक्षण चयन।",
+        hist_title: "हाल का सत्र लॉग", btn_clear: "साफ़ करें",
+        about_heading: "उन्नत सुविधाएं", about_sub: "पूर्ण सुरक्षा और बहुभाषी पहुंच के लिए डिज़ाइन किया गया।",
+        ab_1_h: "बहुभाषी पहुंच", ab_1_p: "स्वास्थ्य जानकारी में बाधाओं को दूर करने के लिए 7 भाषाओं में अनुवाद।",
+        ab_2_h: "तापमान विश्लेषण", ab_2_p: "दर्ज तापमान के आधार पर जोखिम का स्वचालित मूल्यांकन।",
+        ab_3_h: "पूर्ण गोपनीयता", ab_3_p: "सभी गणनाएं आपके ब्राउज़र में होती हैं। कोई डेटा बाहर नहीं भेजा जाता।",
+        sdg_title: "अच्छा स्वास्थ्य और कल्याण", sdg_desc: "स्वास्थ्य साक्षरता में सुधार के लिए संयुक्त राष्ट्र के सतत विकास लक्ष्य 3 का समर्थन।",
+        footer_sub: "बहुभाषी डिजिटल स्वास्थ्य प्रोजेक्ट · SDG 3 पहल", footer_disc: "केवल शैक्षणिक उपयोग के लिए। डॉक्टर की सलाह का विकल्प नहीं।"
+      },
+      mr: {
+        brand_title: "एआय लक्षण आणि ट्रायज प्लॅटफॉर्म",
+        nav_home: "होम", nav_checker: "लक्षण तपासणी", nav_about: "माहिती",
+        hero_title: "स्मार्ट डिजिटल ट्रायज आणि <span>आरोग्य मार्गदर्शन.</span>",
+        hero_subtitle: "7 भाषांमध्ये उपलब्ध असलेले लक्षण विश्लेषण साधन जे तापमान तपासणी आणि डॉक्टरांसाठी रिपोर्ट तयार करते.",
+        btn_start_check: "तपासणी सुरू करा →", btn_about: "प्लॅटफॉर्म माहिती",
+        hero_art_title: "बहुभाषिक ट्रायज इंजिन", hero_art_sub: "7 भाषा • तापमान तपासणी • लोकल लॉग",
+        hero_art_desc: "जबाबदार आरोग्य जागरूकतेसाठी शैक्षणिक डिजिटल टूल.",
+        checker_heading: "क्लिनिकल ट्रायज मूल्यमापन",
+        checker_desc: "शरीराच्या भागानुसार लक्षणे निवडा आणि रिपोर्ट तयार करा.",
+        form_title: "लक्षण फॉर्म", label_filter: "1. शरीराच्या भागानुसार निवडा",
+        tab_all: "सर्व भाग", tab_head: "डोके आणि घसा", tab_resp: "श्वसन", tab_systemic: "पोट आणि इतर",
+        cat_head: "डोके आणि वरील श्वसन", cat_resp: "श्वसन आणि छाती", cat_systemic: "पोट आणि सामान्य",
+        sym_headache: "डोकेदुखी", sym_sore_throat: "घसा दुखणे", sym_runny_nose: "वाहणारे नाक",
+        sym_cough: "खोकला", sym_fever: "ताप / थंडी वाजणे", sym_tiredness: "थकवा",
+        sym_nausea: "मळमळ", sym_stomach: "पोटाची तक्रार",
+        vitals_title: "शरीराचे तापमान (पर्यायी)", vitals_desc: "फॅरेनहाइट किंवा सेल्सिअस मध्ये तापमान टाका.",
+        label_notes: "अतिरिक्त माहिती / घेतलेली औषधे", ph_notes: "कालावधी किंवा इतर वैद्यकीय माहिती द्या...",
+        label_duration: "2. लक्षणे किती दिवसांपासून आहेत?", opt_choose_dur: "कालावधी निवडा",
+        opt_dur_today: "आजपासून", opt_dur_few: "1–3 दिवस", opt_dur_week: "4–7 दिवस", opt_dur_longer: "एका आठवड्यापेक्षा जास्त",
+        label_severity: "3. तीव्रतेचा स्तर", opt_choose_sev: "तीव्रता निवडा",
+        opt_sev_mild: "सौम्य (दैनिक कामे शक्य)", opt_sev_mod: "मध्यम (दैनिक कामे प्रभावित)", opt_sev_sev: "तीव्र (काम करणे अशक्य)",
+        label_warning: "4. आपत्कालीन लक्षणे आहेत का?", warning_desc: "श्वास घेण्यास त्रास, छातीत तीव्र वेदना, अचानक चक्कर येणे.",
+        opt_yes: "होय", opt_no: "नाही", disc_req: "आवश्यक:", disc_text: "मला समजते की हे साधन फक्त शैक्षणिक माहिती देते, वैद्यकीय निदान नाही.",
+        btn_submit: "मूल्यांकन सुरू करा",
+        aside_emerg_title: "आपत्कालीन सूचना", aside_emerg_bold: "तातडीची मदत:",
+        aside_emerg_text: "छातीत तीव्र वेदना किंवा श्वास घेण्यास अडचण असल्यास तात्काळ आपत्कालीन सेवेशी संपर्क साधा.",
+        aside_cap_title: "वैशिष्ट्ये", cap_1_b: "बहुभाषिक:", cap_1_t: "7 भारतीय भाषांना सपोर्ट.",
+        cap_2_b: "तापमान तपासणी:", cap_2_t: "तापमान धोक्याचे नियम.", cap_3_b: "भाग फिल्टर:", cap_3_t: "वर्गवारीनुसार लक्षणे.",
+        hist_title: "सध्याचा लॉग", btn_clear: "क्लियर करा",
+        about_heading: "प्रगत वैशिष्ट्ये", about_sub: "सुरक्षितता आणि सर्वसमावेशकतेसाठी डिझाइन केलेले.",
+        ab_1_h: "बहुभाषिक सुविधा", ab_1_p: "7 प्रादेशिक भाषांमध्ये तात्काळ भाषांतर सुविधा.",
+        ab_2_h: "तापमान विश्लेषण", ab_2_p: "नोंदवलेल्या तापमानानुसार धोक्याची पातळी ठरवणे.",
+        ab_3_h: "पूर्ण गोपनीयता", ab_3_p: "सर्व माहिती फक्त तुमच्या ब्राऊजरमध्ये सुरक्षित राहते.",
+        sdg_title: "चांगले आरोग्य आणि कल्याण", sdg_desc: "संयुक्त राष्ट्र शाश्वत विकास ध्येय 3 साठी डिजिटल उपक्रम.",
+        footer_sub: "बहुभाषिक डिजिटल आरोग्य प्रोजेक्ट · SDG 3 उपक्रम", footer_disc: "फक्त शैक्षणिक वापरासाठी. डॉक्टरांच्या सल्ल्याचा पर्याय नाही."
+      },
+      te: {
+        brand_title: "AI లక్షణాల అంచనా వేదిక",
+        nav_home: "హోమ్", nav_checker: "లక్షణాల నివేదిక", nav_about: "గురించి",
+        hero_title: "స్మార్ట్ డిజిటల్ లెక్కింపు & <span>ఆరోగ్య మార్గదర్శకత్వం.</span>",
+        hero_subtitle: "7 భాషల్లో లభించే ఆరోగ్య లక్షణాల విశ్లేషణ సాధనం.",
+        btn_start_check: "తనిఖీ ప్రారంభించండి →", btn_about: "వివరాలు",
+        hero_art_title: "బహుభాషా సాధనం", hero_art_sub: "7 భాషలు • ఉష్ణోగ్రత తనిఖీ",
+        hero_art_desc: "బాధ్యతాయుతమైన ఆరోగ్య అవగాహన కోసం విద్యార్థి ప్రాజెక్ట్.",
+        checker_heading: "ఆరోగ్య లక్షణాల అంచనా",
+        checker_desc: "శరీర భాగం ఆధారంగా మీ లక్షణాలను ఎంచుకుని వివరాలు చూడండి.",
+        form_title: "లక్షణాల ఫారమ్", label_filter: "1. శరీర భాగాల ప్రకారం వడపోత",
+        tab_all: "అన్ని రకాలు", tab_head: "తల & గొంతు", tab_resp: "శ్వాసకోశం", tab_systemic: "జీర్ణవ్యవస్థ",
+        cat_head: "తల మరియు పై శ్వాసకోశం", cat_resp: "శ్వాసకోశం మరియు ఛాతీ", cat_systemic: "జీర్ణవ్యవస్థ & సాధారణ",
+        sym_headache: "తలనొప్పి", sym_sore_throat: "గొంతు నొప్పి", sym_runny_nose: "ముక్కు కారడం",
+        sym_cough: "దగ్గు", sym_fever: "జ్వరం / చలి", sym_tiredness: "నీరసం",
+        sym_nausea: "వాంతులు తోచడం", sym_stomach: "కడుపులో అసౌకర్యం",
+        vitals_title: "శరీర ఉష్ణోగ్రత (ఐచ్ఛికం)", vitals_desc: "ఫారెన్‌హీట్ లేదా సెల్సియస్‌లో నమోదు చేయండి.",
+        label_notes: "అదనపు వివరాలు / వాడిన మందులు", ph_notes: "లక్షణాల వ్యవధి లేదా ఇతర వివరాలు రాయండి...",
+        label_duration: "2. లక్షణాలు ఎంతకాలంగా ఉన్నాయి?", opt_choose_dur: "వ్యవధిని ఎంచుకోండి",
+        opt_dur_today: "ఈ రోజే ప్రారంభమైంది", opt_dur_few: "1–3 రోజులు", opt_dur_week: "4–7 రోజులు", opt_dur_longer: "వారం కంటే ఎక్కువ",
+        label_severity: "3. తీవ్రత స్థాయి", opt_choose_sev: "తీవ్రతను ఎంచుకోండి",
+        opt_sev_mild: "సాధారణం", opt_sev_mod: "మధ్యస్థం", opt_sev_sev: "తీవ్రమైనది",
+        label_warning: "4. అత్యవసర లక్షణాలు ఉన్నాయా?", warning_desc: "శ్వాస తీసుకోవడంలో తీవ్రమైన ఇబ్బంది, ఛాతీ నొప్పి.",
+        opt_yes: "అవును", opt_no: "కాదు", disc_req: "అవసరం:", disc_text: "ఇది వైద్య నిర్ధారణ కాదు, కేవలం సమాచారం కోసం మాత్రమేనని గ్రహించాను.",
+        btn_submit: "అంచనా వేయండి",
+        aside_emerg_title: "అత్యవసర హెచ్చరిక", aside_emerg_bold: "వెంటనే సహాయం పొందండి:",
+        aside_emerg_text: "ఛాతీ నొప్పి లేదా శ్వాస తీసుకోవడంలో ఇబ్బంది ఉంటే వెంటనే అత్యవసర వైద్య సేవలను సంప్రదించండి.",
+        aside_cap_title: "ప్రత్యేకతలు", cap_1_b: "బహుభాషా ఫీచర్:", cap_1_t: "7 భారతీయ భాషల్లో అందుబాటులో ఉంది.",
+        cap_2_b: "ఉష్ణోగ్రత తనిఖీ:", cap_2_t: "జ్వరం హెచ్చరిక నియమాలు.", cap_3_b: "భాగాల విభజన:", cap_3_t: "వర్గీకరించిన లక్షణాలు.",
+        hist_title: "ఇటీవలి హిస్టరీ", btn_clear: "క్లియర్ చేయి",
+        about_heading: "సాంకేతిక వివరాలు", about_sub: "ఖచ్చితమైన భద్రతతో రూపకల్పన చేయబడింది.",
+        ab_1_h: "బహుభాషా సౌకర్యం", ab_1_p: "7 ప్రాంతీయ భాషల్లో సమాచారం పొందే అవకాశం.",
+        ab_2_h: "ఉష్ణోగ్రత అంచనా", ab_2_p: "నమోదు చేసిన ఉష్ణోగ్రత ఆధారంగా ప్రమాద హెచ్చరిక.",
+        ab_3_h: "గోప్యత", ab_3_p: "మీ డేటా మీ బ్రౌజర్‌లోనే సురక్షితంగా ఉంటుంది.",
+        sdg_title: "మంచి ఆరోగ్యం మరియు సంక్షేమం", sdg_desc: "ఐక్యరాజ్యసమితి SDG 3 లక్ష్య సాధనలో భాగం.",
+        footer_sub: "బహుభాషా డిజిటల్ హెల్త్ ప్రోటోటైప్ · SDG 3", footer_disc: "విద్యా ప్రయోజనాల కోసం మాత్రమే. డాక్టర్ సలహాకు ప్రత్యామ్నాయం కాదు."
+      },
+      bn: {
+        brand_title: "এআই লক্ষণ ও ট্রায়াজ প্ল্যাটফর্ম",
+        nav_home: "হোম", nav_checker: "লক্ষণ পরীক্ষা", nav_about: "আমাদের কথা",
+        hero_title: "স্মার্ট ডিজিটাল ট্রায়াজ ও <span>স্বাস্থ্য নির্দেশিকা।</span>",
+        hero_subtitle: "৭টি ভাষায় উপলব্ধ লক্ষণ বিশ্লেষণ সরঞ্জাম যা তাপমাত্রা পরীক্ষা এবং ডাক্তারের জন্য রিপোর্ট তৈরি করে।",
+        btn_start_check: "পরীক্ষা শুরু করুন →", btn_about: "বিস্তারিত",
+        hero_art_title: "বহুভাষিক ট্রায়াজ ইঞ্জিন", hero_art_sub: "৭টি ভাষা • তাপমাত্রা পরীক্ষা",
+        hero_art_desc: "দায়িত্বশীল স্বাস্থ্য সচেতনতার জন্য শিক্ষামূলক ডিজিটাল সরঞ্জাম।",
+        checker_heading: "ক্লিনিক্যাল ট্রায়াজ মূল্যায়ন",
+        checker_desc: "শরীরের অংশ অনুযায়ী লক্ষণ নির্বাচন করুন এবং আপনার রিপোর্ট পান।",
+        form_title: "লক্ষণ ফরম", label_filter: "১. শরীরের অংশ অনুযায়ী ফিল্টার করুন",
+        tab_all: "সব অংশ", tab_head: "মাথা ও গলা", tab_resp: "শ্বাসতন্ত্র", tab_systemic: "পেট ও সাধারণ",
+        cat_head: "মাথা ও উপরিভাগের শ্বাসতন্ত্র", cat_resp: "শ্বাসতন্ত্র ও বুক", cat_systemic: "পেট ও সাধারণ লক্ষণ",
+        sym_headache: "মাথা ব্যথা", sym_sore_throat: "গলা ব্যথা", sym_runny_nose: "নাক দিয়ে জল পড়া",
+        sym_cough: "কাশি", sym_fever: "জ্বর / কাঁপুনি", sym_tiredness: "ক্লান্তি",
+        sym_nausea: "বমি বমি ভাব", sym_stomach: "পেটে অস্বস্তি",
+        vitals_title: "শরীরের তাপমাত্রা (ঐচ্ছিক)", vitals_desc: "ফারেনহাইট বা সেলসিয়াসে তাপমাত্রা লিখুন।",
+        label_notes: "অতিরিক্ত তথ্য / গৃহীত ওষুধ", ph_notes: "লক্ষণগুলির সময়কাল বা অন্যান্য বিবরণ লিখুন...",
+        label_duration: "২. লক্ষণগুলি কতদিন ধরে আছে?", opt_choose_dur: "সময়কাল বেছে নিন",
+        opt_dur_today: "আজ শুরু হয়েছে", opt_dur_few: "১–৩ দিন", opt_dur_week: "৪–৭ দিন", opt_dur_longer: "এক সপ্তাহের বেশি",
+        label_severity: "৩. তীব্রতার মাত্রা", opt_choose_sev: "তীব্রতা বেছে নিন",
+        opt_sev_mild: "মৃদু", opt_sev_mod: "মাঝারি", opt_sev_sev: "তীব্র",
+        label_warning: "৪. জরুরি সতর্কতা চিহ্ন আছে কি?", warning_desc: "শ্বাসকষ্ট, বুকে তীব্র ব্যথা, হঠাৎ চেতনা হারানো।",
+        opt_yes: "হ্যাঁ", opt_no: "না", disc_req: "প্রয়োজন:", disc_text: "আমি বুঝতে পারছি এটি কেবল শিক্ষার উদ্দেশ্যে এবং এটি কোনো ডাক্তারি পরামর্শ নয়।",
+        btn_submit: "মূল্যায়ন শুরু করুন",
+        aside_emerg_title: "জরুরি নোটিশ", aside_emerg_bold: "জরুরি সাহায্য:",
+        aside_emerg_text: "বুকে প্রচণ্ড ব্যথা বা শ্বাসকষ্ট হলে অবিলম্বে জরুরি স্বাস্থ্যসেবায় যোগাযোগ করুন।",
+        aside_cap_title: "বৈশিষ্ট্যসমূহ", cap_1_b: "বহুভাষিক:", cap_1_t: "৭টি ভারতীয় ভাষার সমর্থন।",
+        cap_2_b: "তাপমাত্রা পরীক্ষা:", cap_2_t: "উচ্চ জ্বরের সতর্কতা।", cap_3_b: "অংশ ফিল্টার:", cap_3_t: "শ্রেণীভিত্তিক লক্ষণ।",
+        hist_title: "সাম্প্রতিক হিস্ট্রি", btn_clear: "মুছে ফেলুন",
+        about_heading: "উন্নত আর্কিটেকচার", about_sub: "সম্পূর্ণ সুরক্ষা এবং ভাষার সহজলভ্যতার জন্য তৈরি।",
+        ab_1_h: "বহুভাষিক সুবিধা", ab_1_p: "স্বাস্থ্য তথ্যের বাধা দূর করতে ৭টি আঞ্চলিক ভাষায় রূপান্তর।",
+        ab_2_h: "তাপমাত্রা বিশ্লেষণ", ab_2_p: "নথিভুক্ত তাপমাত্রার ওপর ভিত্তি করে ঝুঁকির মাত্রা নির্ধারণ।",
+        ab_3_h: "পূর্ণ গোপনীয়তা", ab_3_p: "সমস্ত তথ্য কেবল আপনার ব্রাউজারেই সুরক্ষিত থাকে।",
+        sdg_title: "সুস্বাস্থ্য ও কল্যাণ", sdg_desc: "জাতিসংঘের টেকসই উন্নয়ন লক্ষ্যমাত্রা ৩-এর সমর্থনে ডিজিটাল উদ্যোগ।",
+        footer_sub: "বহুভাষিক ডিজিটাল স্বাস্থ্য প্রকল্প · SDG 3 initiative", footer_disc: "শুধুমাত্র শিক্ষামূলক ব্যবহারের জন্য। চিকিৎসকের পরামর্শের বিকল্প নয়।"
+      },
+      ta: {
+        brand_title: "AI அறிகுறி மற்றும் முன்கணிப்பு தளம்",
+        nav_home: "முகப்பு", nav_checker: "அறிகுறி சோதனை", nav_about: "பற்றி",
+        hero_title: "ஸ்மார்ட் டிஜிட்டல் சோதனை & <span>சுகாதார வழிகாட்டுதல்.</span>",
+        hero_subtitle: "7 மொழிகளில் கிடைக்கும் சுகாதார அறிகுறி பகுப்பாய்வு கருவி.",
+        btn_start_check: "சோதனையைத் தொடங்கு →", btn_about: "விவரங்கள்",
+        hero_art_title: "பல்மொழி அறிகுறி இயந்திரம்", hero_art_sub: "7 மொழிகள் • உடல் வெப்பநிலை சோதனை",
+        hero_art_desc: "பொறுப்பான சுகாதார விழிப்புணர்வுக்கான கல்வி கருவி.",
+        checker_heading: "சுகாதார அறிகுறி மதிப்பீடு",
+        checker_desc: "உடல் உறுப்புகள் வாரியாக அறிகுறிகளைத் தேர்ந்தெடுத்து அறிக்கை பெறவும்.",
+        form_title: "அறிகுறி படிவம்", label_filter: "1. உடல் உறுப்புகள் வாரியாக பிரிக்கவும்",
+        tab_all: "அனைத்தும்", tab_head: "தலை & தொண்டை", tab_resp: "சுவாச மண்டலம்", tab_systemic: "செரிமானம் & பொது",
+        cat_head: "தலை மற்றும் மேல் சுவாசம்", cat_resp: "சுவாச மண்டலம் & நெஞ்சு", cat_systemic: "செரிமானம் & பொதுவானவை",
+        sym_headache: "தலைவலி", sym_sore_throat: "தொண்டை வலி", sym_runny_nose: "மூக்கு ஒழுகுதல்",
+        sym_cough: "இருமல்", sym_fever: "காய்ச்சல் / குளிர்", sym_tiredness: "சோர்வு",
+        sym_nausea: "குமட்டல்", sym_stomach: "வயிறு அசௌகரியம்",
+        vitals_title: "உடல் வெப்பநிலை (விருப்பத்தேர்வு)", vitals_desc: "பாரன்ஹீட் அல்லது செல்சியஸில் உள்ளிடவும்.",
+        label_notes: "கூடுதல் விவரங்கள் / எடுத்த மருந்துகள்", ph_notes: "அறிகுறிகளின் காலம் அல்லது பிற వివరங்களைக் குறிப்பிடவும்...",
+        label_duration: "2. அறிகுறிகள் எவ்வளவு காலமாக உள்ளன?", opt_choose_dur: "காலத்தை தேர்ந்தெடுக்கவும்",
+        opt_dur_today: "இன்று தொடங்கியது", opt_dur_few: "1–3 நாட்கள்", opt_dur_week: "4–7 நாட்கள்", opt_dur_longer: "ஒரு வாரத்திற்கு மேல்",
+        label_severity: "3. தீவிரத்தின் நிலை", opt_choose_sev: "தீவிரத்தை தேர்ந்தெடுக்கவும்",
+        opt_sev_mild: "மிதமான", opt_sev_mod: "நடுத்தர", opt_sev_sev: "கடுமையான",
+        label_warning: "4. அவசர அறிகுறிகள் உள்ளனவா?", warning_desc: "மூச்சுத்திணறல், கடுமையான நெஞ்சு வலி, மயக்கம்.",
+        opt_yes: "ஆம்", opt_no: "இல்லை", disc_req: "தேவை:", disc_text: "இது மருத்துவக் கண்டறிதல் அல்ல, கல்வி வழிகாட்டுதல் மட்டுமே என்பதைப் புரிந்து கொள்கிறேன்.",
+        btn_submit: "மதிப்பீட்டைத் தொடங்கு",
+        aside_emerg_title: "அவசர அறிவிப்பு", aside_emerg_bold: "உடனடி உதவி:",
+        aside_emerg_text: "நெஞ்சு வலி அல்லது மூச்சுத்திணறல் இருந்தால் உடனடியாக அவசர மருத்துவ உதவியை நாடவும்.",
+        aside_cap_title: "அம்சங்கள்", cap_1_b: "பல்மொழி வசதி:", cap_1_t: "7 இந்திய மொழிகள் ஆதரவு.",
+        cap_2_b: "வெப்பநிலை கணக்கீடு:", cap_2_t: "உயர் காய்ச்சல் எச்சரிக்கை.", cap_3_b: "பிரிவு வாரியாக:", cap_3_t: "வகைப்படுத்தப்பட்ட அறிகுறிகள்.",
+        hist_title: "சமீபத்திய பதிவு", btn_clear: "அழி",
+        about_heading: "மேம்பட்ட வடிவமைப்பு", about_sub: "முழு பாதுகாப்பு மற்றும் மொழி அணுகலுக்காக உருவாக்கப்பட்டது.",
+        ab_1_h: "பல்மொழி அணுகல்", ab_1_p: "7 பிராந்திய மொழிகளில் தகவல்களைப் பெறும் வசதி.",
+        ab_2_h: "வெப்பநிலை ஆய்வு", ab_2_p: "பதிவு செய்யப்பட்ட வெப்பநிலையின் அடிப்படையில் ஆபத்து மதிப்பீடு.",
+        ab_3_h: "முழுமையான தனியுரிமை", ab_3_p: "உங்கள் தரவு உங்கள் உலாவிக்குள்ளேயே பாதுகாப்பாக இருக்கும்.",
+        sdg_title: "நல்ல சுகாதாரம் மற்றும் நல்வாழ்வு", sdg_desc: "ஐக்கிய நாடுகளின் நிலையான வளர்ச்சி இலக்கு 3 க்கான டிஜிட்டல் முயற்சி.",
+        footer_sub: "பல்மொழி டிஜிட்டல் சுகாதார திட்டம் · SDG 3", footer_disc: "கல்விப் பயன்பாட்டிற்கு மட்டுமே. மருத்துவ ஆலோசனையல்ல."
+      },
+      kn: {
+        brand_title: "AI ರೋಗಲಕ್ಷಣ ತಪಾಸಣಾ ವೇದಿಕೆ",
+        nav_home: "ಮುಖಪುಟ", nav_checker: "ರೋಗಲಕ್ಷಣ ತಪಾಸಣೆ", nav_about: "ಕುರಿತು",
+        hero_title: "ಸ್ಮಾರ್ಟ್ ಡಿಜಿಟಲ್ ತಪಾಸಣೆ & <span>ಆರೋಗ್ಯ ಮಾರ್ಗದರ್ಶನ.</span>",
+        hero_subtitle: "7 ಭಾಷೆಗಳಲ್ಲಿ ಲಭ್ಯವಿರುವ ಆರೋಗ್ಯ ರೋಗಲಕ್ಷಣಗಳ ವಿಶ್ಲೇಷಣಾ ಸಾಧನ.",
+        btn_start_check: "ತಪಾಸಣೆ ಪ್ರಾರಂಭಿಸಿ →", btn_about: "ವಿವರಗಳು",
+        hero_art_title: "ಬಹುಭಾಷಾ ತಪಾಸಣಾ ಸಾಧನ", hero_art_sub: "7 ಭಾಷೆಗಳು • ತಾಪಮಾನ ತಪಾಸಣೆ",
+        hero_art_desc: "ಜವಾಬ್ದಾರಿಯುತ ಆರೋಗ್ಯ ಅರಿವಿಗಾಗಿ ಶೈಕ್ಷಣಿಕ ಡಿಜಿಟಲ್ ಸಾಧನ.",
+        checker_heading: "ಆರೋಗ್ಯ ರೋಗಲಕ್ಷಣಗಳ ಮೌಲ್ಯಮಾಪನ",
+        checker_desc: "ದೇಹದ ಭಾಗಗಳ ಆಧಾರದ ಮೇಲೆ ರೋಗಲಕ್ಷಣಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ವರದಿ ಪಡೆಯಿರಿ.",
+        form_title: "ರೋಗಲಕ್ಷಣ ನಮೂನೆ", label_filter: "1. ದೇಹದ ಭಾಗಗಳ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ",
+        tab_all: "ಎಲ್ಲಾ ಭಾಗಗಳು", tab_head: "ತಲೆ & ಗಂಟಲು", tab_resp: "ಉಸಿರಾಟ ವ್ಯವಸ್ಥೆ", tab_systemic: "ಜೀರ್ಣಾಂಗ & ಸಾಮಾನ್ಯ",
+        cat_head: "ತಲೆ ಮತ್ತು ಮೇಲ್ಭಾಗದ ಉಸಿರಾಟ", cat_resp: "ಉಸಿರಾಟ ಮತ್ತು ಎದೆ", cat_systemic: "ಜೀರ್ಣಾಂಗ ಮತ್ತು ಸಾಮಾನ್ಯ",
+        sym_headache: "ತಲೆನೋವು", sym_sore_throat: "ಗಂಟಲು ನೋವು", sym_runny_nose: "ಸಿಂಬಳ ಸೋರುವುದು",
+        sym_cough: "ಕೆಮ್ಮು", sym_fever: "ಜ್ವರ / ಚಳಿ", sym_tiredness: "ಸುಸ್ತು",
+        sym_nausea: "ವಾಂತಿ ಬಂದಂತಾಗುವುದು", sym_stomach: "ಹೊಟ್ಟೆಯಲ್ಲಿ ಅಸ್ವಸ್ಥತೆ",
+        vitals_title: "ದೇಹದ ತಾಪಮಾನ (ಐಚ್ಛಿಕ)", vitals_desc: "ಫ್ಯಾರನ್‌ಹೀಟ್ ಅಥವಾ ಸೆಲ್ಸಿಯಸ್‌ನಲ್ಲಿ ನಮೂದಿಸಿ.",
+        label_notes: "ಹೆಚ್ಚುವರಿ ವಿವರಗಳು / ತೆಗೆದುಕೊಂಡ ಔಷಧಗಳು", ph_notes: "ರೋಗಲಕ್ಷಣಗಳ ಅವಧಿ ಅಥವಾ ಇತರ ವಿವರಗಳನ್ನು ಬರೆಯಿರಿ...",
+        label_duration: "2. ರೋಗಲಕ್ಷಣಗಳು ಎಷ್ಟು ದಿನಗಳಿಂದ ಇವೆ?", opt_choose_dur: "ಅವಧಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        opt_dur_today: "ಇಂದಿನಿಂದ ಪ್ರಾರಂಭವಾಗಿದೆ", opt_dur_few: "1–3 ದಿನಗಳು", opt_dur_week: "4–7 ದಿನಗಳು", opt_dur_longer: "ಒಂದು ವಾರಕ್ಕಿಂತ ಹೆಚ್ಚು",
+        label_severity: "3. ತೀವ್ರತೆಯ ಮಟ್ಟ", opt_choose_sev: "ತೀವ್ರತೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        opt_sev_mild: "ಸಾಧಾರಣ", opt_sev_mod: "ಮಧ್ಯಮ", opt_sev_sev: "ತೀವ್ರವಾದದ್ದು",
+        label_warning: "4. ತುರ್ತು ಸೂಚನೆಗಳು ಇವೆಯೇ?", warning_desc: "ಉಸಿರಾಟದ ತೊಂದರೆ, ತೀವ್ರ ಎದೆ ನೋವು, ದಿಢೀರ್ ಪ್ರಜ್ಞೆ ತಪ್ಪುವುದು.",
+        opt_yes: "ಹೌದು", opt_no: "ಇಲ್ಲ", disc_req: "ಅಗತ್ಯವಿದೆ:", disc_text: "ಇದು ವೈದ್ಯಕೀಯ ರೋಗನಿರ್ಣಯವಲ್ಲ, ಕೇವಲ ಶೈಕ್ಷಣಿಕ ಮಾರ್ಗದರ್ಶನ ಎಂದು ನಾನು ಅರ್ಥೈಸಿಕೊಳ್ಳುತ್ತೇನೆ.",
+        btn_submit: "ಮೌಲ್ಯಮಾಪನ ಪ್ರಾರಂಭಿಸಿ",
+        aside_emerg_title: "ತುರ್ತು ಸೂಚನೆ", aside_emerg_bold: "ತಕ್ಷಣದ ನೆರವು:",
+        aside_emerg_text: "ಎದೆ ನೋವು ಅಥವಾ ಉಸಿರಾಟದ ತೊಂದರೆ ಇದ್ದಲ್ಲಿ ತಕ್ಷಣವೇ ತುರ್ತು ವೈದ್ಯಕೀಯ ಸೇವೆಯನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+        aside_cap_title: "ವೈಶಿಷ್ಟ್ಯಗಳು", cap_1_b: "ಬಹುಭಾಷಾ ಸೌಲಭ್ಯ:", cap_1_t: "7 ಭಾರತೀಯ ಭಾಷೆಗಳ ಬೆಂಬಲ.",
+        cap_2_b: "ತಾಪಮಾನ ತಪಾಸಣೆ:", cap_2_t: "ಹೆಚ್ಚಿನ ಜ್ವರದ ಮುನ್ನೆಚ್ಚರಿಕೆ ನಿಯಮಗಳು.", cap_3_b: "ಭಾಗಗಳ ವಿಂಗಡಣೆ:", cap_3_t: "ವರ್ಗೀಕರಿಸಿದ ರೋಗಲಕ್ಷಣಗಳು.",
+        hist_title: "ಇತ್ತೀಚಿನ ದಾಖಲೆ", btn_clear: "ತೆರವುಗೊಳಿಸಿ",
+        about_heading: "ಸುಧಾರಿತ ವಿನ್ಯಾಸ", about_sub: "ಸಂಪೂರ್ಣ ಭದ್ರತೆ ಮತ್ತು ಭಾಷಾ ಸುಲಭ್ಯತೆಗಾಗಿ ರೂಪಿಸಲಾಗಿದೆ.",
+        ab_1_h: "ಬಹುಭಾಷಾ ಲಭ್ಯತೆ", ab_1_p: "7 ಪ್ರಾದೇಶಿಕ ಭಾಷೆಗಳಲ್ಲಿ ಮಾಹಿತಿಯನ್ನು ಪಡೆಯುವ ಲಭ್ಯತೆ.",
+        ab_2_h: "ತಾಪಮಾನ ವಿಶ್ಲೇಷಣೆ", ab_2_p: "ದಾಖಲಿಸಿದ ತಾಪಮಾನದ ಆಧಾರದ ಮೇಲೆ ಅಪಾಯದ ಮೌಲ್ಯಮಾಪನ.",
+        ab_3_h: "ಸಂಪೂರ್ಣ ಗೌಪ್ಯತೆ", ab_3_p: "ನಿಮ್ಮ ಮಾಹಿತಿ ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಮಾತ್ರ ಸುರಕ್ಷಿತವಾಗಿರುತ್ತದೆ.",
+        sdg_title: "ಉತ್ತಮ ಆರೋಗ್ಯ ಮತ್ತು ಕ್ಷೇಮ", sdg_desc: "ಸಂಯುಕ್ತ ರಾಷ್ಟ್ರಗಳ ಸುಸ್ಥಿರ ಅಭಿವೃದ್ಧಿ ಗುರಿ 3 ರ ಬೆಂಬಲಕ್ಕಾಗಿ ಡಿಜಿಟಲ್ ಉಪಕ್ರಮ.",
+        footer_sub: "ಬಹುಭಾಷಾ ಡಿಜಿಟಲ್ ಆರೋಗ್ಯ ಯೋಜನೆ · SDG 3", footer_disc: "ಶೈಕ್ಷಣಿಕ ಬಳಕೆಗೆ ಮಾತ್ರ. ವೈದ್ಯರ ಸಲಹೆಗೆ ಪರ್ಯಾಯವಲ್ಲ."
+      }
+    };
+
+    // Dark Mode Switcher
+    const themeToggle = document.getElementById("themeToggle");
+    const bodyEl = document.body;
+
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = bodyEl.getAttribute("data-theme");
+      const newTheme = currentTheme === "light" ? "dark" : "light";
+      bodyEl.setAttribute("data-theme", newTheme);
+      themeToggle.textContent = newTheme === "dark" ? "☀️" : "🌙";
+      localStorage.setItem("theme", newTheme);
+    });
+
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      bodyEl.setAttribute("data-theme", savedTheme);
+      themeToggle.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+    }
+
+    // Multilingual Switcher Logic
+    const langSelector = document.getElementById("langSelector");
+    
+    function applyTranslations(lang) {
+      const texts = i18n[lang] || i18n.en;
+      
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (texts[key]) {
+          el.innerHTML = texts[key];
+        }
+      });
+
+      document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+        const key = el.getAttribute("data-i18n-ph");
+        if (texts[key]) {
+          el.setAttribute("placeholder", texts[key]);
+        }
+      });
+
+      localStorage.setItem("app_lang", lang);
+    }
+
+    langSelector.addEventListener("change", (e) => {
+      applyTranslations(e.target.value);
+    });
+
+    const savedLang = localStorage.getItem("app_lang") || "en";
+    langSelector.value = savedLang;
+    applyTranslations(savedLang);
+
+    // Filter Tabs Logic
+    const filterTabs = document.querySelectorAll(".filter-tab");
+    filterTabs.forEach(tab => {
+      tab.addEventListener("click", function() {
+        filterTabs.forEach(t => t.classList.remove("active"));
+        this.classList.add("active");
+        const filter = this.getAttribute("data-filter");
+
+        document.querySelectorAll(".category-group").forEach(group => {
+          if (filter === "all") {
+            group.style.display = "block";
+          } else if (filter === "head" && group.classList.contains("group-head")) {
+            group.style.display = "block";
+          } else if (filter === "resp" && group.classList.contains("group-resp")) {
+            group.style.display = "block";
+          } else if (filter === "systemic" && group.classList.contains("group-systemic")) {
+            group.style.display = "block";
+          } else {
+            group.style.display = "none";
+          }
+        });
+      });
+    });
+
+    // Form Submission & Dynamic Multilingual Output Engine
+    const form = document.getElementById("symptomForm");
+    const results = document.getElementById("results");
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const lang = langSelector.value;
+      const texts = i18n[lang] || i18n.en;
+
+      const selectedSymptoms = Array.from(
+        form.querySelectorAll('input[name="symptoms"]:checked')
+      ).map(input => input.value);
+
+      const duration = document.getElementById("duration").value;
+      const severity = document.getElementById("severity").value;
+      const warning = form.querySelector('input[name="warning"]:checked')?.value;
+      const userNotes = document.getElementById("userNotes").value.trim();
+      const tempVal = parseFloat(document.getElementById("tempInput").value);
+      const tempUnit = document.getElementById("tempUnit").value;
+
+      if (selectedSymptoms.length === 0) {
+        results.className = "results show";
+        results.innerHTML = `<div class="notice warning"><strong>${texts.disc_req}</strong> Select at least one symptom.</div>`;
+        results.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return;
+      }
+
+      let highFeverDetected = false;
+      if (!isNaN(tempVal)) {
+        let tempF = tempUnit === "C" ? (tempVal * 9/5) + 32 : tempVal;
+        if (tempF >= 103.0) {
+          highFeverDetected = true;
+        }
+      }
+
+      let triageHtml = "";
+      if (warning === "yes" || severity === "severe" || highFeverDetected) {
+        triageHtml = `<div class="notice warning"><strong>🚨 ${texts.aside_emerg_title}: URGENT CARE</strong><br>${texts.aside_emerg_text}</div>`;
+      } else if (severity === "moderate") {
+        triageHtml = `<div class="notice triage-amber"><strong>⚠️ PROMPT CONSULTATION RECOMMENDED</strong><br>Schedule a medical consultation within 24-48 hours.</div>`;
+      } else {
+        triageHtml = `<div class="notice success"><strong>🟢 ROUTINE SELF-CARE</strong><br>Symptoms appear mild. Rest and hydrate.</div>`;
+      }
+
+      let summaryHtml = triageHtml + `<h3 style="margin-top:20px;">Consultation Summary Report</h3>`;
+      
+      summaryHtml += `<p><strong>Selected Symptoms:</strong></p><ul class="result-list">`;
+      selectedSymptoms.forEach(symptom => {
+        const symKey = "sym_" + symptom.replace("-", "_");
+        const translatedSym = texts[symKey] || symptom;
+        summaryHtml += `<li><strong>${translatedSym}</strong></li>`;
+      });
+      summaryHtml += `</ul>`;
+
+      if (!isNaN(tempVal)) {
+        summaryHtml += `<p><strong>Temperature:</strong> ${tempVal} °${tempUnit}</p>`;
+      }
+
+      summaryHtml += `<p><strong>Severity:</strong> ${severity.toUpperCase()}</p>`;
+      
+      if (userNotes) {
+        summaryHtml += `<p><strong>Notes:</strong> "${escapeHtml(userNotes)}"</p>`;
+      }
+
+      summaryHtml += `<div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">`;
+      summaryHtml += `<button class="button outline" type="button" onclick="window.print()">🖨️ Print Report</button>`;
+      summaryHtml += `<button class="button secondary" type="button" onclick="copyReportToClipboard()">📋 Copy Summary</button>`;
+      summaryHtml += `</div>`;
+
+      results.className = "results show";
+      results.innerHTML = summaryHtml;
+      results.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      saveAssessmentHistory(selectedSymptoms.length, severity);
+    });
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function copyReportToClipboard() {
+      const resultsText = document.getElementById("results").innerText;
+      navigator.clipboard.writeText(resultsText).then(() => {
+        alert("Summary copied to clipboard!");
+      });
+    }
+
+    function saveAssessmentHistory(count, severity) {
+      let history = JSON.parse(localStorage.getItem("triage_history") || "[]");
+      history.unshift({
+        date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        count: count,
+        severity: severity
+      });
+      if (history.length > 3) history.pop();
+      localStorage.setItem("triage_history", JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      let history = JSON.parse(localStorage.getItem("triage_history") || "[]");
+      const card = document.getElementById("historyCard");
+      const list = document.getElementById("historyList");
+      if (history.length === 0) {
+        card.style.display = "none";
+        return;
+      }
+      card.style.display = "block";
+      list.innerHTML = "";
+      history.forEach(item => {
+        list.innerHTML += `<div class="history-item"><span>Check at ${item.date} (${item.count} symptoms)</span><strong>${item.severity.toUpperCase()}</strong></div>`;
+      });
+    }
+
+    function clearHistory() {
+      localStorage.removeItem("triage_history");
+      renderHistory();
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
